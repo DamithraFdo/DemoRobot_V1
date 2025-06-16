@@ -4,7 +4,7 @@
  * Developers: Damithrafdo, Shenuka, Kalaynilavan, Medhawi
  * Under supervision of Dr. Tharindu
  * 
- * Development Board: arduino uno
+ * Development Board: arduino uno, bauderate 9600
  * Functions: Obstacle avoiding, line folowing ...
  * 
  * Diagram        
