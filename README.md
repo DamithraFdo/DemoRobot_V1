@@ -19,11 +19,11 @@ This is about a demonstrable DIY robot application project
    This code is a basic implementation of a line-following robot with obstacle avoidance capabilities.
    
  * Diagram        
+ 
            __________________________
           |                          |
           | Ultrasonic Sensor Array  |
           |__________________________| 
-                         |
                          |-----------------
             __________________________    |
            |  (ir0,ir1,ir2,ir3,ir4)   |   |
@@ -35,10 +35,10 @@ This is about a demonstrable DIY robot application project
                   |             |
                   | Arduino Uno |
                   |_____________|
-                         |
-    __________     ______|______     ___________
-   |   (lm)   |   |             |   |   (rm)    |  
-   |Left Motor|---| MotorDriver |---|Right Motor| 
-   |__________|   |_____________|   |___________|
-              
+                             |
+        __________     ______|______     ___________
+       |   (lm)   |   |             |   |   (rm)    |  
+       |Left Motor|---| MotorDriver |---|Right Motor| 
+       |__________|   |_____________|   |___________|
+
    
