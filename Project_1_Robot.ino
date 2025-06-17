@@ -127,14 +127,12 @@ float measureDistance() {
   //Obstacle avoidance 
   float distance = measureDistance();
   if (distance < THRESHOLD_DISTANCE) {
-    stop();
-  	delay(500);       // Pause for a moment
-
-  	InALine(false); // Reverse a bit
-    delay(1000); 
-
-  	Turn(true); //  Turn away from obstacle
-    delay(700);   
+   stop();
+   delay(500);       // Pause for a moment
+   InALine(false); // Reverse a bit
+   delay(1000); 
+   Turn(true); //  Turn away from obstacle
+   delay(700);   
   } else {
     InALine(true); 
   }
