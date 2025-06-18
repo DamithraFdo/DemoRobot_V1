@@ -139,6 +139,10 @@ float measureDistance() {
  }
  
  void ModeB(){
+  
+ }
+ 
+ void ModeC(){
   //Line following
   val0=digitalRead(ir0); 
   val1=digitalRead(ir1);
@@ -191,9 +195,6 @@ float measureDistance() {
   }
   delay(1000);
   
- }
- 
- void ModeC(){
   
  }
 // these are along with the kine following
