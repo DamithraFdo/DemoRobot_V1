@@ -69,13 +69,13 @@ const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
 int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
 int THRESHOLD_DISTANCE = 20; // the distance (in cm) for obstacle detection
 
-void stop();
-void InALine(bool x);
-void Turn(bool y);
-float getDistance();
-void ModeA();
-void ModeB();
-void ModeC();
+// void stop();
+// void InALine(bool x);
+// void Turn(bool y);
+// float getDistance();
+// void ModeA();
+// void ModeB();
+// void ModeC();
 
 
 
@@ -101,7 +101,9 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  void ModeA();
   void ModeB();
+  void ModeC();
 }
 
 //Add functions here - 
@@ -139,7 +141,7 @@ float measureDistance() {
  }
  
  void ModeB(){
-  
+  //Obstacle avoidance with servo
  }
  
  void ModeC(){
