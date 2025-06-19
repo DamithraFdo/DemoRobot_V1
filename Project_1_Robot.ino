@@ -59,12 +59,14 @@
 
 //Add difines here - #define app A0
 // Ultrasonic sensor pins
-#define TRIG_PIN A1
+#define TRIG_PIN A1      // Main ultrasonic sensor
 #define ECHO_PIN A2
+#define TRIG_DOWN A0     // Downward ultrasonic sensor
+#define ECHO_DOWN A3
 #define MAX_DISTANCE 200 
 
 // Servo pin
-#define SERVO_PIN 1
+#define SERVO_PIN 13
 
 // OLED
 #define SCREEN_WIDTH 128
@@ -74,23 +76,17 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 //Put variables here - int Val
 
-const int rme=10,lme=11; //enable pins, Speed
-const int rmb=8, rmf=9, lmb=12, lmf=13; //motor signals, left/right motor back/forward
+//const int rme=10,lme=11; //enable pins, Speed
+const int rmb=12, rmf=11, lmb=10, lmf=9; //motor signals, left/right motor back/forward
 const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
 int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
-int THRESHOLD_DISTANCE = 20;// the distance (in cm) for obstacle detection
+int THRESHOLD_DISTANCE = 30;// the distance (in cm) for obstacle detection
 
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
+NewPing downSonar(TRIG_DOWN, ECHO_DOWN, MAX_DISTANCE);
 Servo myservo;
 int distance = 100;
-// void stop();
-// void InALine(bool x);
-// void Turn(bool y);
-// float getDistance();
-// void ModeA();
-// void ModeB();
-// void ModeC();
-
+int downDistance = 100;
 
 
 void setup() {
@@ -99,8 +95,8 @@ void setup() {
   pinMode(rmf, OUTPUT);
   pinMode(lmb, OUTPUT);
   pinMode(lmf, OUTPUT);
-  pinMode(rme, OUTPUT);
-  pinMode(lme, OUTPUT);
+//  pinMode(rme, OUTPUT);
+//  pinMode(lme, OUTPUT);
   pinMode(ir0, INPUT);
   pinMode(ir1, INPUT);
   pinMode(ir2, INPUT);
@@ -109,6 +105,8 @@ void setup() {
   // Ultrasonic Sensor
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  pinMode(TRIG_DOWN, OUTPUT);
+  pinMode(ECHO_DOWN, INPUT);
   // Servo setup
   myservo.attach(SERVO_PIN);
   myservo.write(90);  // Center
@@ -128,9 +126,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  void ModeA();
-  void ModeB();
-  void ModeC();
+  ModeA();
 }
 
 //Add functions here - 
@@ -142,23 +138,47 @@ void loop() {
  *  retern;
  * }
  */
-float measureDistance() {
+// Reads front distance
+int readDistance() {
   delay(50);
   int cm = sonar.ping_cm();
-  if (cm == 0) cm = 250;  // No object
+  if (cm == 0) cm = 250;
   return cm;
 }
 
+// Reads downward distance
+int readDownDistance() {
+  delay(50);
+  int cm = downSonar.ping_cm();
+  if (cm == 0) cm = 250;
+  return cm;
+}
+
+// Analyze path using servo + main ultrasonic
+void analyzeFreePath() {
+  int distanceRight = lookRight();
+  delay(300);
+  int distanceLeft = lookLeft();
+  delay(300);
+
+  if (distanceRight >= distanceLeft) {
+    Turn(true);
+  } else {
+    Turn(false);
+  }
+}
+
+
  void ModeA(){
   //Obstacle avoidance 
-  float distance = measureDistance();
+  float distance = readDownDistance();
   if (distance < THRESHOLD_DISTANCE) {
-   stop();
-   delay(500);       // Pause for a moment
-   InALine(false); // Reverse a bit
-   delay(1000); 
-   Turn(true); //  Turn away from obstacle
-   delay(700);   
+    stop();
+    delay(500);       // Pause for a moment
+    InALine(false); // Reverse a bit
+    delay(500); 
+    Turn(false); //  Turn away from obstacle
+    delay(700);   
   } else {
     InALine(true); 
   }
@@ -166,27 +186,27 @@ float measureDistance() {
  
  void ModeB(){
   //Obstacle avoidance with servo
-  distance = measureDistance();
-  Serial.println(distance);
+  distance = readDistance();
+  downDistance = readDownDistance();
+  Serial.print("Front: ");
+  Serial.print(distance);
+  Serial.print(" cm, Down: ");
+  Serial.println(downDistance);
 
-  if (distance <= THRESHOLD_DISTANCE) {
+  if (downDistance <= THRESHOLD_DISTANCE) {  // Adjust threshold for small obstacles under the robot
+    stop();
+    delay(300);
+    analyzeFreePath();
+    return;  // Skip other checks in this loop
+  }
+  else if (distance <= THRESHOLD_DISTANCE) {
     stop();
     delay(300);
     InALine(false);
     delay(400);
     stop();
     delay(300);
-
-    int distanceRight = lookRight();
-    delay(300);
-    int distanceLeft = lookLeft();
-    delay(300);
-
-    if (distanceRight >= distanceLeft) {
-      Turn(true);
-    } else {
-      Turn(false);
-    }
+    analyzeFreePath();
   } else {
     InALine(true);
   }
@@ -250,7 +270,7 @@ float measureDistance() {
 int lookRight() {
   myservo.write(45);
   delay(500);
-  int d = measureDistance();
+  int d = readDistance();
   delay(100);
   myservo.write(90);
   return d;
@@ -260,7 +280,7 @@ int lookRight() {
 int lookLeft() {
   myservo.write(135);
   delay(500);
-  int d = measureDistance();
+  int d = readDistance();
   delay(100);
   myservo.write(90);
   return d;
@@ -271,8 +291,8 @@ int lookLeft() {
 {
   if(x==true)
   {
-    analogWrite(rme,60);
-    analogWrite(lme,60);
+    // analogWrite(rme,60);
+    // analogWrite(lme,60);
     digitalWrite(rmb,LOW);
     digitalWrite(rmf,HIGH);
     digitalWrite(lmb,LOW);
@@ -281,8 +301,8 @@ int lookLeft() {
   }
   else //move backward
   {
-    analogWrite(rme,50);
-    analogWrite(lme,50);
+    // analogWrite(rme,50);
+    // analogWrite(lme,50);
     digitalWrite(rmb,HIGH);
     digitalWrite(rmf,LOW);
     digitalWrite(lmb,HIGH);
@@ -293,8 +313,8 @@ int lookLeft() {
 
 void Turn(bool y) //to turn
 {
-    analogWrite(rme,50);
-    analogWrite(lme,50); 
+    // analogWrite(rme,50);
+    // analogWrite(lme,50); 
     if (y==true) //move right
     {
     digitalWrite(rmb,LOW);
@@ -314,7 +334,11 @@ void Turn(bool y) //to turn
 }
 void stop()
 {
-    analogWrite(rme,0);
-    analogWrite(lme,0);
+    // analogWrite(rme,0);
+    // analogWrite(lme,0);
+    digitalWrite(rmb,LOW);
+    digitalWrite(rmf,LOW);
+    digitalWrite(lmb,LOW);
+    digitalWrite(lmf,LOW);
     Serial.println("stop");    
 }
