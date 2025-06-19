@@ -55,7 +55,8 @@
 
 
 //Add difines here - #define app A0
-
+#define TRIG_PIN A1
+#define ECHO_PIN A2
 
 
 
@@ -66,6 +67,15 @@ const int rme=10,lme=11; //enable pins, Speed
 const int rmb=8, rmf=9, lmb=12, lmf=13; //motor signals, left/right motor back/forward
 const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
 int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
+int THRESHOLD_DISTANCE = 20; // the distance (in cm) for obstacle detection
+
+// void stop();
+// void InALine(bool x);
+// void Turn(bool y);
+// float getDistance();
+// void ModeA();
+// void ModeB();
+// void ModeC();
 
 
 
@@ -82,12 +92,18 @@ void setup() {
   pinMode(ir2, INPUT);
   pinMode(ir3, INPUT);
   pinMode(ir4, INPUT);
+  // Ultrasonic Sensor
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
   Serial.begin(9600);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  void ModeA();
   void ModeB();
+  void ModeC();
 }
 
 //Add functions here - 
@@ -99,12 +115,36 @@ void loop() {
  *  retern;
  * }
  */
+float measureDistance() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  float duration = pulseIn(ECHO_PIN, HIGH);
+  return (duration / 2.0) * 0.0343; 
+}
 
  void ModeA(){
   //Obstacle avoidance 
+  float distance = measureDistance();
+  if (distance < THRESHOLD_DISTANCE) {
+   stop();
+   delay(500);       // Pause for a moment
+   InALine(false); // Reverse a bit
+   delay(1000); 
+   Turn(true); //  Turn away from obstacle
+   delay(700);   
+  } else {
+    InALine(true); 
+  }
  }
  
  void ModeB(){
+  //Obstacle avoidance with servo
+ }
+ 
+ void ModeC(){
   //Line following
   val0=digitalRead(ir0); 
   val1=digitalRead(ir1);
@@ -157,9 +197,6 @@ void loop() {
   }
   delay(1000);
   
- }
- 
- void ModeC(){
   
  }
 // these are along with the kine following
