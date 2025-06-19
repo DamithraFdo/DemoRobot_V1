@@ -49,16 +49,27 @@
  */
 
 //Add Libries here - #include<libry.h>
-
-
+#include <NewPing.h> 
+#include <Servo.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 
 
 //Add difines here - #define app A0
+// Ultrasonic sensor pins
 #define TRIG_PIN A1
 #define ECHO_PIN A2
+#define MAX_DISTANCE 200 
 
+// Servo pin
+#define SERVO_PIN 1
 
+// OLED
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 
 //Put variables here - int Val
@@ -67,8 +78,11 @@ const int rme=10,lme=11; //enable pins, Speed
 const int rmb=8, rmf=9, lmb=12, lmf=13; //motor signals, left/right motor back/forward
 const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
 int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
-int THRESHOLD_DISTANCE = 20; // the distance (in cm) for obstacle detection
+int THRESHOLD_DISTANCE = 20;// the distance (in cm) for obstacle detection
 
+NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
+Servo myservo;
+int distance = 100;
 // void stop();
 // void InALine(bool x);
 // void Turn(bool y);
@@ -95,6 +109,19 @@ void setup() {
   // Ultrasonic Sensor
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
+  // Servo setup
+  myservo.attach(SERVO_PIN);
+  myservo.write(90);  // Center
+  delay(1000);
+
+  // OLED setup
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    for (;;); // Don't proceed, loop forever
+  }
+  display.clearDisplay();
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.display();
 
   Serial.begin(9600);
 }
@@ -116,13 +143,10 @@ void loop() {
  * }
  */
 float measureDistance() {
-  digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
-  float duration = pulseIn(ECHO_PIN, HIGH);
-  return (duration / 2.0) * 0.0343; 
+  delay(50);
+  int cm = sonar.ping_cm();
+  if (cm == 0) cm = 250;  // No object
+  return cm;
 }
 
  void ModeA(){
@@ -142,6 +166,30 @@ float measureDistance() {
  
  void ModeB(){
   //Obstacle avoidance with servo
+  distance = measureDistance();
+  Serial.println(distance);
+
+  if (distance <= THRESHOLD_DISTANCE) {
+    stop();
+    delay(300);
+    InALine(false);
+    delay(400);
+    stop();
+    delay(300);
+
+    int distanceRight = lookRight();
+    delay(300);
+    int distanceLeft = lookLeft();
+    delay(300);
+
+    if (distanceRight >= distanceLeft) {
+      Turn(true);
+    } else {
+      Turn(false);
+    }
+  } else {
+    InALine(true);
+  }
  }
  
  void ModeC(){
@@ -196,9 +244,28 @@ float measureDistance() {
    InALine(x);
   }
   delay(1000);
-  
-  
  }
+
+ // Look right
+int lookRight() {
+  myservo.write(45);
+  delay(500);
+  int d = measureDistance();
+  delay(100);
+  myservo.write(90);
+  return d;
+}
+
+// Look left
+int lookLeft() {
+  myservo.write(135);
+  delay(500);
+  int d = measureDistance();
+  delay(100);
+  myservo.write(90);
+  return d;
+}
+
 // these are along with the kine following
  void InALine(bool x) //to move in a line
 {
