@@ -2,7 +2,7 @@
  # DemoRobot_V1
  * This is about a demonstrable DIY robot application project
  * All rights reserved under the R&D team Anka Robotics by Anka Technologies
- * Developers: Damithrafdo, Shenuka, Kalaynilavan, Medhawi
+ * Developers: Damithrafdo, Shanuka, Kalaynilavan, Medhawi
  * Under the supervision of Dr. Tharindu
  * 
  * Development Board: Arduino Uno
@@ -24,11 +24,11 @@
  *          __________________________
  *         |                          |
  *         | Ultrasonic Sensor Array  |
- *         |__________________________| 
- *                       |
- *                       |-----------------
- *          __________________________    |
- *         |  (ir0,ir1,ir2,ir3,ir4)   |   |
+ *         |__________________________|             _____________
+ *                       |                         |             |
+ *                       |-------------------------| Servo motor |
+ *          __________________________    |        |_____________|
+ *         |  (ir0,ir1,ir2,ir3,ir4)   |   |        
  *         |  Line Follower IR Array  |   |
  *         |__________________________|   |
  *                       |                |
