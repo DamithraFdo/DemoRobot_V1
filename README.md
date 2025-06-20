@@ -22,10 +22,10 @@ This is about a demonstrable DIY robot application project
  
            __________________________
           |                          |
-          | Ultrasonic Sensor Array  |
-          |__________________________| 
-                         |-----------------
-            __________________________    |
+          | Ultrasonic Sensor Array  |                  ______________
+          |__________________________|                 |              |
+                         |-----------------------------| Servor Motor |
+            __________________________    |            |______________|
            |  (ir0,ir1,ir2,ir3,ir4)   |   |
            |  Line Follower IR Array  |   |
            |__________________________|   |
