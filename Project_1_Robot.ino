@@ -138,6 +138,13 @@ void loop() {
  *  retern;
  * }
  */
+// Display function for OLED 
+void showOnOLED(const char* msg) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.println(msg);
+  display.display();
+}
 // Reads front distance
 int readDistance() {
   delay(50);
@@ -166,11 +173,12 @@ void analyzeFreePath() {
   } else {
     Turn(false);
   }
-}
-
+gi
 
  void ModeA(){
   //Obstacle avoidance 
+  showOnOLED("Mode A");
+
   float distance = readDownDistance();
   if (distance < THRESHOLD_DISTANCE) {
     stop();
@@ -186,6 +194,8 @@ void analyzeFreePath() {
  
  void ModeB(){
   //Obstacle avoidance with servo
+  showOnOLED("Mode B");
+
   distance = readDistance();
   downDistance = readDownDistance();
   Serial.print("Front: ");
@@ -214,6 +224,8 @@ void analyzeFreePath() {
  
  void ModeC(){
   //Line following
+  showOnOLED("Mode C");
+
   val0=digitalRead(ir0); 
   val1=digitalRead(ir1);
   val2=digitalRead(ir2);
