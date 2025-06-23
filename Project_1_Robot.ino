@@ -2,7 +2,7 @@
  # DemoRobot_V1
  * This is about a demonstrable DIY robot application project
  * All rights reserved under the R&D team Anka Robotics by Anka Technologies
- * Developers: Damithrafdo, Shanuka, Kalaynilavan, Medhawi
+ * Developers: Damithrafdo, Shanuka, Kalaynilavan, Medhavi
  * Under the supervision of Dr. Tharindu
  * 
  * Development Board: Arduino Uno
@@ -73,6 +73,8 @@
 #define SCREEN_HEIGHT 64
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
+// Button
+#define BUTTON_PIN 7
 
 //Put variables here - int Val
 
@@ -81,6 +83,7 @@ const int rmb=12, rmf=11, lmb=10, lmf=9; //motor signals, left/right motor back/
 const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
 int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
 int THRESHOLD_DISTANCE = 30;// the distance (in cm) for obstacle detection
+int modeCount = 0; // Variable to track the mode
 
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 NewPing downSonar(TRIG_DOWN, ECHO_DOWN, MAX_DISTANCE);
@@ -121,12 +124,51 @@ void setup() {
   display.setTextColor(SSD1306_WHITE);
   display.display();
 
+  // pushbutton setup
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
   Serial.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  ModeA();
+  
+  static bool lastState = HIGH; // Last known state of the button - default
+  static unsigned long lastDebounceTime = 0; // Debounce timer
+  const unsigned long debounceDelay = 50; // Debounce delay in milliseconds
+
+  bool currentState = digitalRead(BUTTON_PIN);
+
+  // Check button stsate
+  if (currentState != lastState) {
+    lastDebounceTime = millis(); // Reset debounce timer 
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (lastState == LOW && currentState == HIGH) {
+      modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2, 3
+      Serial.print("Mode changed to: ");
+      Serial.println(modeCount);
+    }
+  }
+
+  lastState = currentState; // Update the last button state
+
+  switch (modeCount) {
+    case 0:
+      ModeA(); 
+      break;
+    case 1:
+      ModeB(); 
+      break;
+    case 2:
+      ModeC(); 
+      break;
+    case 3:
+      ModeD(); 
+      break;
+    default:
+      break;
+  }
 }
 
 //Add functions here - 
@@ -173,7 +215,7 @@ void analyzeFreePath() {
   } else {
     Turn(false);
   }
-gi
+}
 
  void ModeA(){
   //Obstacle avoidance 
@@ -277,6 +319,38 @@ gi
   }
   delay(1000);
  }
+
+void ModeD(){
+ 
+  showOnOLED("Mode D");
+
+  val0=digitalRead(ir0); // Left sensor
+  val4=digitalRead(ir4); // Right sensor
+  
+  if(!val0 && !val4) 
+  {
+    bool x=true;
+    InALine(x); 
+  }
+  else if(val0 && !val4) 
+  {
+    bool y=true;
+    Turn(y);
+  }
+  else if(!val0 && val4) 
+  {
+    bool y=false;
+    Turn(y);
+  }
+  else if(val0 && val4) 
+  {
+    stop();
+    delay(200);
+    
+  }
+  
+  delay(100); 
+}
 
  // Look right
 int lookRight() {
