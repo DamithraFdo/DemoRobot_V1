@@ -1,6 +1,6 @@
 This is about a demonstrable DIY robot application project
  * All rights reserved under the R&D team Anka Robotics by Anka Technologies
- * Developers: Damithrafdo, Shanuka, Kalaynilavan, Medhawi
+ * Developers: Damithrafdo, Shanuka, Kalaynilavan, Medhavi
  * Under the supervision of Dr. Tharindu
    
  * Development Board: Arduino Uno
