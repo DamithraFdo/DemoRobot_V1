@@ -23,22 +23,24 @@ void loop() {
     int centerSensor = digitalRead(CENTER_SENSOR_PIN);
     int rightSensor = digitalRead(RIGHT_SENSOR_PIN);
 
-    if (centerSensor == LOW && leftSensor == HIGH && rightSensor == HIGH) {
+    if (leftSensor == HIGH && centerSensor == LOW && rightSensor == HIGH) {
         // On line, go forward
         moveForward();
-    } else if (leftSensor == LOW) {
+    } else if (leftSensor == LOW && centerSensor == LOW && rightSensor == HIGH) {
         // Line detected on left, turn left
         turnLeft();
-    } else if (leftSensor == LOW && centerSensor == LOW) {
+    } else if (leftSensor == LOW && centerSensor == HIGH && rightSensor == HIGH) {
         // Line detected on left, turn left
         turnLeft();
-    } else if (rightSensor == LOW) {
+    } else if (leftSensor == HIGH && centerSensor == LOW && rightSensor == LOW) {
         // Line detected on right, turn right
         turnRight();
-    } else if (rightSensor == LOW && centerSensor == LOW) {
+    } else if (leftSensor == HIGH && centerSensor == HIGH && rightSensor == LOW) {
         // Line detected on right, turn right
-
         turnRight();
+    } else if (leftSensor == LOW && centerSensor == LOW && rightSensor == LOW) {
+        // Line detected on right, turn right
+        stopMotors();
     } else {
         // No line detected, stop
         stopMotors();
