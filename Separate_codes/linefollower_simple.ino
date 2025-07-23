@@ -29,21 +29,13 @@ void loop() {
         moveForward();
     } else if (leftSensor == LOW && centerSensor == LOW && rightSensor == HIGH) {
         // Line detected on left, turn left
-        stopMotors();
-        delay(100); // Short stop before turning
         turnLeft();
-        delay(100); // Short delay to complete the turn
-        moveForward(); // Resume moving forward after turn
     } else if (leftSensor == LOW && centerSensor == HIGH && rightSensor == HIGH) {
         // Line detected on left, turn left
         turnLeft();
     } else if (leftSensor == HIGH && centerSensor == LOW && rightSensor == LOW) {
         // Line detected on right, turn right
-        stopMotors();
-        delay(100); // Short stop before turning
         turnRight();
-        delay(100); // Short delay to complete the turn
-        moveForward(); // Resume moving forward after turn
     } else if (leftSensor == HIGH && centerSensor == HIGH && rightSensor == LOW) {
         // Line detected on right, turn right
         turnRight();
