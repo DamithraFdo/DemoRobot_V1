@@ -325,6 +325,7 @@ void ModeC(){
         // No line detected, stop
         stopMotors();
   }
+}
 void ModeD(){
   //Sample testing
   showOnOLED("Mode D");
