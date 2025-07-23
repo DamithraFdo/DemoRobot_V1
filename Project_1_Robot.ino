@@ -157,6 +157,10 @@ void loop() {
       ModeC();
       Serial.println("C");
       break;
+    case 3:
+      ModeD();  
+      Serial.println("D");
+      break;
     default:
       break;
   }
@@ -321,6 +325,38 @@ void ModeC(){
         // No line detected, stop
         stopMotors();
   }
+void ModeD(){
+  //Sample testing
+  showOnOLED("Mode D");
+  delay(1000);
+  // Show initial message
+  display.clearDisplay();
+  showOnOLED("Testing started");
+  delay(1000);
+  // Test movements
+  moveForward();
+  showOnOLED("Forward");
+  delay(1000); 
+  stopMotors();
+  delay(500);
+  moveBackward();
+  showOnOLED("Backward");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnLeft();
+  showOnOLED("Left"); 
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnRight();
+  showOnOLED("Right");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  stopMotors();
+  showOnOLED("Stopped");
+  delay(5000);
 }
 
 void moveForward() {
