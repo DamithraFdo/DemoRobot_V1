@@ -137,7 +137,7 @@ void loop() {
   bool currentState = digitalRead(BUTTON_PIN);
 
   if (lastState == LOW && currentState == HIGH) {
-    modeCount = (modeCount + 1) % 3; // Cycle through 0, 1, 2
+    modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2
     Serial.print("Mode changed to: ");
     Serial.println(modeCount);
   }
@@ -249,10 +249,50 @@ int lookLeft() {
 }
 
 
+//-- Mode functions for different behaviors
 
-void ModeA() {
-  // Obstacle avoidance
+// Mode A: Sample testing-----------------------------------------------------------------------------------
+// This mode is for testing the robot's movements and functionality
+void ModeA(){
+  //Sample testing
   showOnOLED("Mode A");
+  delay(1000);
+  // Show initial message
+  display.clearDisplay();
+  showOnOLED("Testing start");
+  delay(1000);
+  // Test movements
+  moveForward();
+  showOnOLED("Forward");
+  delay(1000); 
+  stopMotors();
+  delay(500);
+  moveBackward();
+  showOnOLED("Backward");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnLeft();
+  showOnOLED("Left"); 
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnRight();
+  showOnOLED("Right");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  stopMotors();
+  showOnOLED("Stopped");
+  delay(5000);
+}
+
+// Mode B: Obstacle avoidance-------------------------------------------------------------------------------
+// This mode is for obstacle avoidance using a single ultrasonic sensor
+// The robot will move forward if no obstacles are detected, otherwise it will back up and turn
+void ModeB() {
+  // Obstacle avoidance
+  showOnOLED("Mode B");
 
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE) {
@@ -272,10 +312,12 @@ void ModeA() {
   }
 }
 
- 
-void ModeB(){
-  //Obstacle avoidance with servo
-  showOnOLED("Mode B");
+ // Mode C: Obstacle avoidance with two sensors---------------------------------------------------------------
+// This mode is for obstacle avoidance using two ultrasonic sensors
+// The robot will move forward if no obstacles are detected, otherwise it will back up and turn
+void ModeC(){
+  //Obstacle avoidance with two sensors
+  showOnOLED("Mode C");
   float distance1 = readDownDistance();
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE || distance1 < THRESHOLD_DISTANCE ) {
@@ -295,9 +337,12 @@ void ModeB(){
   }
 }
  
-void ModeC(){
+// Mode D: Line following-----------------------------------------------------------------------------------
+// This mode is for line following using IR sensors
+// The robot will follow a line based on the readings from the IR sensors
+void ModeD(){
   //Line following
-  showOnOLED("Mode C");
+  showOnOLED("Mode D");
   int leftSensor = digitalRead(LEFT_SENSOR_PIN);
   int centerSensor = digitalRead(CENTER_SENSOR_PIN);
   int rightSensor = digitalRead(RIGHT_SENSOR_PIN);
@@ -326,40 +371,9 @@ void ModeC(){
         stopMotors();
   }
 }
-void ModeD(){
-  //Sample testing
-  showOnOLED("Mode D");
-  delay(1000);
-  // Show initial message
-  display.clearDisplay();
-  showOnOLED("Testing started");
-  delay(1000);
-  // Test movements
-  moveForward();
-  showOnOLED("Forward");
-  delay(1000); 
-  stopMotors();
-  delay(500);
-  moveBackward();
-  showOnOLED("Backward");
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  turnLeft();
-  showOnOLED("Left"); 
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  turnRight();
-  showOnOLED("Right");
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  stopMotors();
-  showOnOLED("Stopped");
-  delay(5000);
-}
 
+// Function to move the robot forward, backward, turn left, turn right, and stop motors
+// These functions control the motors based on the robot's movement requirements
 void moveForward() {
     digitalWrite(lmf, HIGH);
     digitalWrite(lmb, LOW);
