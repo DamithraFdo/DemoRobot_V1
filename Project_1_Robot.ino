@@ -76,14 +76,17 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 // Button
 #define BUTTON_PIN 7
 
+// IR
+#define LEFT_SENSOR_PIN   2
+#define CENTER_SENSOR_PIN 3
+#define RIGHT_SENSOR_PIN  4
+
 //Put variables here - int Val
 
-//const int rme=10,lme=11; //enable pins, Speed
-const int rmb=12, rmf=11, lmb=10, lmf=9; //motor signals, left/right motor back/forward
-const int ir0=2, ir1=3, ir2=4, ir3=5, ir4=6; //ir signals white=1 and black=0
-int val0=0, val1=0, val2=0, val3=0, val4=0; //variables
+const int rmb=12, rmf=11, lmb=10, lmf=9, rme= 5, lme=6; //motor signals, left/right motor back/forward
 int THRESHOLD_DISTANCE = 30;// the distance (in cm) for obstacle detection
 int modeCount = 0; // Variable to track the mode
+bool lastState = HIGH;
 
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 NewPing downSonar(TRIG_DOWN, ECHO_DOWN, MAX_DISTANCE);
@@ -91,20 +94,18 @@ Servo myservo;
 int distance = 100;
 int downDistance = 100;
 
-
 void setup() {
   // put your setup code here, to run once:
   pinMode(rmb, OUTPUT);
   pinMode(rmf, OUTPUT);
   pinMode(lmb, OUTPUT);
   pinMode(lmf, OUTPUT);
-//  pinMode(rme, OUTPUT);
-//  pinMode(lme, OUTPUT);
-  pinMode(ir0, INPUT);
-  pinMode(ir1, INPUT);
-  pinMode(ir2, INPUT);
-  pinMode(ir3, INPUT);
-  pinMode(ir4, INPUT);
+  pinMode(rme, OUTPUT);
+  pinMode(lme, OUTPUT);
+  pinMode(LEFT_SENSOR_PIN, INPUT);
+  pinMode(CENTER_SENSOR_PIN, INPUT);
+  pinMode(RIGHT_SENSOR_PIN, INPUT);
+
   // Ultrasonic Sensor
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
@@ -114,6 +115,8 @@ void setup() {
   myservo.attach(SERVO_PIN);
   myservo.write(90);  // Center
   delay(1000);
+
+  randomSeed(analogRead(0));
 
   // OLED setup
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -131,45 +134,38 @@ void setup() {
 }
 
 void loop() {
-  
-  static bool lastState = HIGH; // Last known state of the button - default
-  static unsigned long lastDebounceTime = 0; // Debounce timer
-  const unsigned long debounceDelay = 50; // Debounce delay in milliseconds
-
   bool currentState = digitalRead(BUTTON_PIN);
 
-  // Check button stsate
-  if (currentState != lastState) {
-    lastDebounceTime = millis(); // Reset debounce timer 
+  if (lastState == LOW && currentState == HIGH) {
+    modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2
+    Serial.print("Mode changed to: ");
+    Serial.println(modeCount);
   }
 
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (lastState == LOW && currentState == HIGH) {
-      modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2, 3
-      Serial.print("Mode changed to: ");
-      Serial.println(modeCount);
-    }
-  }
-
-  lastState = currentState; // Update the last button state
+  lastState = currentState;
 
   switch (modeCount) {
     case 0:
-      ModeA(); 
+      ModeA();
+      Serial.println("A");
       break;
     case 1:
-      ModeB(); 
+      ModeB();
+      Serial.println("B");
       break;
     case 2:
-      ModeC(); 
+      ModeC();
+      Serial.println("C");
       break;
     case 3:
-      ModeD(); 
+      ModeD();  
+      Serial.println("D");
       break;
     default:
       break;
   }
 }
+
 
 //Add functions here - 
 /*func(_){
@@ -205,226 +201,211 @@ int readDownDistance() {
 
 // Analyze path using servo + main ultrasonic
 void analyzeFreePath() {
+  myservo.write(0);
   int distanceRight = lookRight();
-  delay(300);
+  delay(500);
   int distanceLeft = lookLeft();
-  delay(300);
+  delay(500);
 
   if (distanceRight >= distanceLeft) {
-    Turn(true);
+    turnRight();
   } else {
-    Turn(false);
+    turnLeft();
   }
+  myservo.write(0);
 }
 
- void ModeA(){
-  //Obstacle avoidance 
-  showOnOLED("Mode A");
+int lookRight() {
+  myservo.write(90);        
+  delay(200);
 
-  float distance = readDownDistance();
-  if (distance < THRESHOLD_DISTANCE) {
-    stop();
-    delay(500);       // Pause for a moment
-    InALine(false); // Reverse a bit
-    delay(500); 
-    Turn(false); //  Turn away from obstacle
-    delay(700);   
-  } else {
-    InALine(true); 
-  }
- }
- 
- void ModeB(){
-  //Obstacle avoidance with servo
+  myservo.write(0);        
+  delay(200);
+
+  int d = readDistance();   
+  delay(100);
+
+  myservo.write(90);        
+  delay(200);
+
+  return d;
+}
+
+
+int lookLeft() {
+  myservo.write(90);        
+  delay(200);
+
+  myservo.write(180);       
+  delay(200);
+
+  int d = readDistance();   
+  delay(100);
+
+  myservo.write(90);        
+  delay(200);
+
+  return d;
+}
+
+
+//-- Mode functions for different behaviors
+
+// Mode A: Sample testing-----------------------------------------------------------------------------------
+// This mode is for testing the robot's movements and functionality
+void ModeA(){
+  //Sample testing
+  showOnOLED("Mode A");
+  delay(1000);
+  // Show initial message
+  display.clearDisplay();
+  showOnOLED("Testing start");
+  delay(1000);
+  // Test movements
+  moveForward();
+  showOnOLED("Forward");
+  delay(1000); 
+  stopMotors();
+  delay(500);
+  moveBackward();
+  showOnOLED("Backward");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnLeft();
+  showOnOLED("Left"); 
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  turnRight();
+  showOnOLED("Right");
+  delay(1500);
+  stopMotors();
+  delay(1000);
+  stopMotors();
+  showOnOLED("Stopped");
+  delay(5000);
+}
+
+// Mode B: Obstacle avoidance-------------------------------------------------------------------------------
+// This mode is for obstacle avoidance using a single ultrasonic sensor
+// The robot will move forward if no obstacles are detected, otherwise it will back up and turn
+void ModeB() {
+  // Obstacle avoidance
   showOnOLED("Mode B");
 
-  distance = readDistance();
-  downDistance = readDownDistance();
-  Serial.print("Front: ");
-  Serial.print(distance);
-  Serial.print(" cm, Down: ");
-  Serial.println(downDistance);
-
-  if (downDistance <= THRESHOLD_DISTANCE) {  // Adjust threshold for small obstacles under the robot
-    stop();
-    delay(300);
-    analyzeFreePath();
-    return;  // Skip other checks in this loop
-  }
-  else if (distance <= THRESHOLD_DISTANCE) {
-    stop();
-    delay(300);
-    InALine(false);
+  float distance = readDistance();
+  if (distance < THRESHOLD_DISTANCE) {
+    stopMotors();
+    delay(500);       
+    moveBackward();   
+    delay(100);
+    bool turn_Right = random(0, 2);  
+    if (turn_Right) {
+      turnRight();
+    } else {
+      turnLeft();
+    }               
     delay(400);
-    stop();
-    delay(300);
-    analyzeFreePath();
   } else {
-    InALine(true);
+    moveForward(); 
   }
- }
- 
- void ModeC(){
-  //Line following
+}
+
+ // Mode C: Obstacle avoidance with two sensors---------------------------------------------------------------
+// This mode is for obstacle avoidance using two ultrasonic sensors
+// The robot will move forward if no obstacles are detected, otherwise it will back up and turn
+void ModeC(){
+  //Obstacle avoidance with two sensors
   showOnOLED("Mode C");
-
-  val0=digitalRead(ir0); 
-  val1=digitalRead(ir1);
-  val2=digitalRead(ir2);
-  val3=digitalRead(ir3);
-  val4=digitalRead(ir4);
-  if(val0 && val1 && !val2 && val3 && val4) //forward (1&1&0&1&1)
-  {
-    bool x=true;
-    InALine(x); 
+  float distance1 = readDownDistance();
+  float distance = readDistance();
+  if (distance < THRESHOLD_DISTANCE || distance1 < THRESHOLD_DISTANCE ) {
+    stopMotors();
+    delay(500);       
+    moveBackward();   
+    delay(100);
+    bool turn_Right = random(0, 2);  
+    if (turn_Right) {
+      turnRight();
+    } else {
+      turnLeft();
+    }               
+    delay(400);
+  } else {
+    moveForward(); 
   }
-  else if(val0 && val1 && val2 && !val3 && !val4) //turn right (1&1&1&0&0)
-  {
-    bool y=true;
-    Turn(y);
-  }
-  else if(!val0 && !val1 && val2 && val3 && val4) //turn left (0&0&1&1&1)
-  {
-    bool y=false;
-    Turn(y);
-  }
-  else if(!val0 && !val1 && !val2 && !val3 && !val4) //stop (0&0&0&0&0)
-  {
-    stop();
-  }
-  else if(val0 && val1 && val2 && val3 && val4) //circle (1&1&1&1&1)
-  {
-   bool y=false;
-    Turn(y);  
-  }
-  else if(!val0 && !val1 && val2 && !val3 && !val4) //in a t-shape condition turn left (0&0&1&0&0)
-  {
-   bool y=false;
-   Turn(y);  
-  }
-  else if(val0 && val1 && !val2 && !val3 && !val4) //in a forward and left condition turn left (1&1&0&0&0)
-  {
-   bool y=false;
-   Turn(y);  
-  }
-  else if(!val0 && !val1 && !val2 && val3 && val4) //in a forward and right condition go straight (0&0&0&1&1)
-  {
-   bool x=true;
-   InALine(x);  
-  }
-  else
-  {
-   bool x=false;
-   InALine(x);
-  }
-  delay(1000);
- }
-
-void ModeD(){
+}
  
+// Mode D: Line following-----------------------------------------------------------------------------------
+// This mode is for line following using IR sensors
+// The robot will follow a line based on the readings from the IR sensors
+void ModeD(){
+  //Line following
   showOnOLED("Mode D");
+  int leftSensor = digitalRead(LEFT_SENSOR_PIN);
+  int centerSensor = digitalRead(CENTER_SENSOR_PIN);
+  int rightSensor = digitalRead(RIGHT_SENSOR_PIN);
 
-  val0=digitalRead(ir0); // Left sensor
-  val4=digitalRead(ir4); // Right sensor
-  
-  if(!val0 && !val4) 
-  {
-    bool x=true;
-    InALine(x); 
-  }
-  else if(val0 && !val4) 
-  {
-    bool y=true;
-    Turn(y);
-  }
-  else if(!val0 && val4) 
-  {
-    bool y=false;
-    Turn(y);
-  }
-  else if(val0 && val4) 
-  {
-    stop();
-    delay(200);
-    
-  }
-  
-  delay(100); 
-}
-
- // Look right
-int lookRight() {
-  myservo.write(45);
-  delay(500);
-  int d = readDistance();
-  delay(100);
-  myservo.write(90);
-  return d;
-}
-
-// Look left
-int lookLeft() {
-  myservo.write(135);
-  delay(500);
-  int d = readDistance();
-  delay(100);
-  myservo.write(90);
-  return d;
-}
-
-// these are along with the kine following
- void InALine(bool x) //to move in a line
-{
-  if(x==true)
-  {
-    // analogWrite(rme,60);
-    // analogWrite(lme,60);
-    digitalWrite(rmb,LOW);
-    digitalWrite(rmf,HIGH);
-    digitalWrite(lmb,LOW);
-    digitalWrite(lmf,HIGH);
-    Serial.println("forward");
-  }
-  else //move backward
-  {
-    // analogWrite(rme,50);
-    // analogWrite(lme,50);
-    digitalWrite(rmb,HIGH);
-    digitalWrite(rmf,LOW);
-    digitalWrite(lmb,HIGH);
-    digitalWrite(lmf,LOW);
-    Serial.println("backward");    
+  if (leftSensor == HIGH && centerSensor == LOW && rightSensor == HIGH) {
+        // On line, go forward
+        moveForward();
+  } else if (leftSensor == LOW && centerSensor == LOW && rightSensor == HIGH) {
+        // Line detected on left, turn left
+        turnLeft();
+  } else if (leftSensor == LOW && centerSensor == HIGH && rightSensor == HIGH) {
+        // Line detected on left, turn left
+        turnLeft();
+  } else if (leftSensor == HIGH && centerSensor == LOW && rightSensor == LOW) {
+        // Line detected on right, turn right
+        turnRight();
+  } else if (leftSensor == HIGH && centerSensor == HIGH && rightSensor == LOW) {
+        // Line detected on right, turn right
+        turnRight();
+  } else if (leftSensor == LOW && centerSensor == LOW && rightSensor == LOW) {
+        // Line detected on right, turn right
+        turnLeft();
+        delay(400);
+  } else {
+        // No line detected, stop
+        stopMotors();
   }
 }
 
-void Turn(bool y) //to turn
-{
-    // analogWrite(rme,50);
-    // analogWrite(lme,50); 
-    if (y==true) //move right
-    {
-    digitalWrite(rmb,LOW);
-    digitalWrite(rmf,LOW);
-    digitalWrite(lmb,LOW);
-    digitalWrite(lmf,HIGH);
-    Serial.println("right");      
-    }
-    else //move left
-    {
-    digitalWrite(rmb,LOW);
-    digitalWrite(rmf,HIGH);
-    digitalWrite(lmb,LOW);
-    digitalWrite(lmf,LOW);
-    Serial.println("left");      
-    }
+// Function to move the robot forward, backward, turn left, turn right, and stop motors
+// These functions control the motors based on the robot's movement requirements
+void moveForward() {
+    digitalWrite(lmf, HIGH);
+    digitalWrite(lmb, LOW);
+    digitalWrite(rmf, HIGH);
+    digitalWrite(rmb, LOW);
 }
-void stop()
-{
-    // analogWrite(rme,0);
-    // analogWrite(lme,0);
-    digitalWrite(rmb,LOW);
-    digitalWrite(rmf,LOW);
-    digitalWrite(lmb,LOW);
-    digitalWrite(lmf,LOW);
-    Serial.println("stop");    
+
+void moveBackward() {
+    digitalWrite(lmf, LOW);
+    digitalWrite(lmb, HIGH);
+    digitalWrite(rmf, LOW);
+    digitalWrite(rmb, HIGH);
 }
+
+void turnLeft() {
+    digitalWrite(lmf, LOW);
+    digitalWrite(lmb, HIGH);
+    digitalWrite(rmf, HIGH);
+    digitalWrite(rmb, LOW);
+}
+
+void turnRight() {
+    digitalWrite(lmf, HIGH);
+    digitalWrite(lmb, LOW);
+    digitalWrite(rmf, LOW);
+    digitalWrite(rmb, HIGH);
+}
+
+void stopMotors() {
+    digitalWrite(lmf, LOW);
+    digitalWrite(lmb, LOW);
+    digitalWrite(rmf, LOW);
+    digitalWrite(rmb, LOW);
+}
+
