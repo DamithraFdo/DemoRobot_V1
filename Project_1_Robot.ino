@@ -117,6 +117,13 @@ void setup() {
   delay(1000);
 
   randomSeed(analogRead(0));
+  showOnOLED("Robot Starting...");
+  delay(2000);
+  display.clearDisplay();
+  showOnOLED("Select Mode");
+  delay(3000);
+  showOnOLED("Default Mode: A");
+  delay(2000);
 
   // OLED setup
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -256,7 +263,7 @@ int lookLeft() {
 void ModeA(){
   //Sample testing
   showOnOLED("Mode A");
-  delay(1000);
+  delay(3000);
   // Show initial message
   display.clearDisplay();
   showOnOLED("Testing start");
@@ -293,7 +300,8 @@ void ModeA(){
 void ModeB() {
   // Obstacle avoidance
   showOnOLED("Mode B");
-
+  delay(3000);
+  // Read distance from the ultrasonic sensor
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE) {
     stopMotors();
@@ -318,6 +326,7 @@ void ModeB() {
 void ModeC(){
   //Obstacle avoidance with two sensors
   showOnOLED("Mode C");
+  delay(3000);
   float distance1 = readDownDistance();
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE || distance1 < THRESHOLD_DISTANCE ) {
@@ -343,6 +352,7 @@ void ModeC(){
 void ModeD(){
   //Line following
   showOnOLED("Mode D");
+  delay(3000);
   int leftSensor = digitalRead(LEFT_SENSOR_PIN);
   int centerSensor = digitalRead(CENTER_SENSOR_PIN);
   int rightSensor = digitalRead(RIGHT_SENSOR_PIN);
