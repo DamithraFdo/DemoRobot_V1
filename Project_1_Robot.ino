@@ -116,7 +116,7 @@ void setup() {
   myservo.write(90);  // Center
   delay(1000);
 
-   randomSeed(analogRead(0));
+  randomSeed(analogRead(0));
 
   // OLED setup
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -144,7 +144,7 @@ void loop() {
   bool currentState = digitalRead(BUTTON_PIN);
 
   if (lastState == LOW && currentState == HIGH) {
-    modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2
+    modeCount = (modeCount + 1) % 4; // Cycle through 0, 1, 2,3
     Serial.print("Mode changed to: ");
     Serial.println(modeCount);
   }
@@ -206,103 +206,69 @@ int readDownDistance() {
   return cm;
 }
 
-// Analyze path using servo + main ultrasonic
-void analyzeFreePath() {
-  myservo.write(0);
-  int distanceRight = lookRight();
-  delay(500);
-  int distanceLeft = lookLeft();
-  delay(500);
-
-  if (distanceRight >= distanceLeft) {
-    turnRight();
-  } else {
-    turnLeft();
-  }
-  myservo.write(0);
-}
-
-int lookRight() {
-  myservo.write(90);        
-  delay(200);
-
-  myservo.write(0);        
-  delay(200);
-
-  int d = readDistance();   
-  delay(100);
-
-  myservo.write(90);        
-  delay(200);
-
-  return d;
-}
-
-
-int lookLeft() {
-  myservo.write(90);        
-  delay(200);
-
-  myservo.write(180);       
-  delay(200);
-
-  int d = readDistance();   
-  delay(100);
-
-  myservo.write(90);        
-  delay(200);
-
-  return d;
-}
-
 
 //-- Mode functions for different behaviors
 
 // Mode A: Sample testing-----------------------------------------------------------------------------------
 // This mode is for testing the robot's movements and functionality
-void ModeA(){
-  //Sample testing
-  stopMotors();
+void ModeA() {
   showOnOLED("Mode A");
   delay(3000);
-  // Show initial message
-  display.clearDisplay();
-  showOnOLED("Testing start");
-  delay(1000);
-  // Test movements
-  moveForward();
-  showOnOLED("Forward");
-  delay(1000); 
-  stopMotors();
-  delay(500);
-  moveBackward();
-  showOnOLED("Back");
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  turnLeft();
-  showOnOLED("Left"); 
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  turnRight();
-  showOnOLED("Right");
-  delay(1500);
-  stopMotors();
-  delay(1000);
-  stopMotors();
-  showOnOLED("Stopped");
-  delay(5000);
+  
+  while (modeCount == 0) {
+    if (checkAndChangeMode()) return;
+
+    moveForward();
+    showOnOLED("Forward");
+    delay(1000);
+    if (checkAndChangeMode()) return;
+
+    stopMotors();
+    delay(500);
+    if (checkAndChangeMode()) return;
+
+    moveBackward();
+    showOnOLED("Back");
+    delay(1500);
+    if (checkAndChangeMode()) return;
+
+    stopMotors();
+    delay(1000);
+    if (checkAndChangeMode()) return;
+
+    turnLeft();
+    showOnOLED("Left");
+    delay(1500);
+    if (checkAndChangeMode()) return;
+
+    stopMotors();
+    delay(1000);
+    if (checkAndChangeMode()) return;
+
+    turnRight();
+    showOnOLED("Right");
+    delay(1500);
+    if (checkAndChangeMode()) return;
+
+    stopMotors();
+    delay(1000);
+    if (checkAndChangeMode()) return;
+
+    stopMotors();
+    showOnOLED("Stopped");
+    delay(5000);
+    if (checkAndChangeMode()) return;
+  }
 }
+
+
 
 // Mode B: Obstacle avoidance-------------------------------------------------------------------------------
 // This mode is for obstacle avoidance using a single ultrasonic sensor
 // The robot will move forward if no obstacles are detected, otherwise it will back up and turn
 void ModeB() {
   // Obstacle avoidance
-  stopMotors();
   showOnOLED("Mode B");
-  delay(3000);
   // Read distance from the ultrasonic sensor
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE) {
@@ -316,8 +282,9 @@ void ModeB() {
     } else {
       turnLeft();
     }               
-    delay(400);
-  } else {
+    delay(200);
+  } 
+  else {
     moveForward(); 
   }
 }
@@ -327,9 +294,7 @@ void ModeB() {
 // The robot will move forward if no obstacles are detected, otherwise it will back up and turn
 void ModeC(){
   //Obstacle avoidance with two sensors
-  stopMotors();
   showOnOLED("Mode C");
-  delay(3000);
   float distance1 = readDownDistance();
   float distance = readDistance();
   if (distance < THRESHOLD_DISTANCE || distance1 < THRESHOLD_DISTANCE ) {
@@ -343,8 +308,9 @@ void ModeC(){
     } else {
       turnLeft();
     }               
-    delay(400);
-  } else {
+    delay(200);
+  } 
+  else {
     moveForward(); 
   }
 }
@@ -354,9 +320,7 @@ void ModeC(){
 // The robot will follow a line based on the readings from the IR sensors
 void ModeD(){
   //Line following
-  stopMotors();
   showOnOLED("Mode D");
-  delay(3000);
   int leftSensor = digitalRead(LEFT_SENSOR_PIN);
   int centerSensor = digitalRead(CENTER_SENSOR_PIN);
   int rightSensor = digitalRead(RIGHT_SENSOR_PIN);
@@ -423,3 +387,15 @@ void stopMotors() {
     digitalWrite(rmb, LOW);
 }
 
+bool checkAndChangeMode() {
+  bool currentState = digitalRead(BUTTON_PIN);
+  if (lastState == LOW && currentState == HIGH) {
+    modeCount = (modeCount + 1) % 4;
+    Serial.print("Mode changed to: ");
+    Serial.println(modeCount);
+    lastState = currentState;
+    return true; // stop ModeA execution
+  }
+  lastState = currentState;
+  return false;
+}
