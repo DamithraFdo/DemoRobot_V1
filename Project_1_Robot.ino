@@ -123,7 +123,7 @@ void setup() {
     for (;;); // Don't proceed, loop forever
   }
   display.clearDisplay();
-  display.setTextSize(3);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
   display.display();
 
@@ -134,6 +134,11 @@ void setup() {
   delay(3000);
   showOnOLED("Default Mode: A");
   delay(2000);
+
+  display.clearDisplay();
+  display.setTextSize(3);
+  display.setTextColor(SSD1306_WHITE);
+  display.display();
 
   // pushbutton setup
   pinMode(BUTTON_PIN, INPUT_PULLUP);
