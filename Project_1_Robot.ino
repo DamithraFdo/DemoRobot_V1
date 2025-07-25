@@ -116,14 +116,7 @@ void setup() {
   myservo.write(90);  // Center
   delay(1000);
 
-  randomSeed(analogRead(0));
-  showOnOLED("Robot Starting...");
-  delay(2000);
-  display.clearDisplay();
-  showOnOLED("Select Mode");
-  delay(3000);
-  showOnOLED("Default Mode: A");
-  delay(2000);
+   randomSeed(analogRead(0));
 
   // OLED setup
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -133,6 +126,14 @@ void setup() {
   display.setTextSize(3);
   display.setTextColor(SSD1306_WHITE);
   display.display();
+
+  showOnOLED("Robot Starting...");
+  delay(2000);
+  display.clearDisplay();
+  showOnOLED("Select Mode");
+  delay(3000);
+  showOnOLED("Default Mode: A");
+  delay(2000);
 
   // pushbutton setup
   pinMode(BUTTON_PIN, INPUT_PULLUP);
