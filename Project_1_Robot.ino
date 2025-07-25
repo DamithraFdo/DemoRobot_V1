@@ -123,22 +123,16 @@ void setup() {
     for (;;); // Don't proceed, loop forever
   }
   display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.display();
-
-  showOnOLED("Robot Starting...");
-  delay(2000);
-  display.clearDisplay();
-  showOnOLED("Select Mode");
-  delay(3000);
-  showOnOLED("Default Mode: A");
-  delay(2000);
-
-  display.clearDisplay();
   display.setTextSize(3);
   display.setTextColor(SSD1306_WHITE);
   display.display();
+
+  showOnOLED("Robot    Start");
+  delay(2000);
+  showOnOLED("Select Mode");
+  delay(3000);
+  showOnOLED("Default Mode");
+  delay(2000);
 
   // pushbutton setup
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -268,6 +262,7 @@ int lookLeft() {
 // This mode is for testing the robot's movements and functionality
 void ModeA(){
   //Sample testing
+  stopMotors();
   showOnOLED("Mode A");
   delay(3000);
   // Show initial message
@@ -281,7 +276,7 @@ void ModeA(){
   stopMotors();
   delay(500);
   moveBackward();
-  showOnOLED("Backward");
+  showOnOLED("Back");
   delay(1500);
   stopMotors();
   delay(1000);
@@ -305,6 +300,7 @@ void ModeA(){
 // The robot will move forward if no obstacles are detected, otherwise it will back up and turn
 void ModeB() {
   // Obstacle avoidance
+  stopMotors();
   showOnOLED("Mode B");
   delay(3000);
   // Read distance from the ultrasonic sensor
@@ -331,6 +327,7 @@ void ModeB() {
 // The robot will move forward if no obstacles are detected, otherwise it will back up and turn
 void ModeC(){
   //Obstacle avoidance with two sensors
+  stopMotors();
   showOnOLED("Mode C");
   delay(3000);
   float distance1 = readDownDistance();
@@ -357,6 +354,7 @@ void ModeC(){
 // The robot will follow a line based on the readings from the IR sensors
 void ModeD(){
   //Line following
+  stopMotors();
   showOnOLED("Mode D");
   delay(3000);
   int leftSensor = digitalRead(LEFT_SENSOR_PIN);
